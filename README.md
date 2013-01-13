@@ -1,14 +1,14 @@
 # Rsync backup rotation
-Automate incremental backups when using Rsync via a module `post-xfer exec` script and the mighty handy `--link-dest`. Backups are numbered in directories from `001..REVISION` with the script dropping the oldest directory after `REVISION` count is reached on the target server.
+Automate incremental backups when using Rsync via a module `post-xfer exec` script and `--link-dest`. Backups are numbered in directories from `001..REVISION` with the script dropping the oldest directory after `REVISION` count has been reached.
 
 ## Install
 
 ### Target server
-Place `rsyncd-rotation.sh` somewhere on your server and ensure it is executable for the user running under `rsyncd`. Configure the `REVISION=XX` bash variable at the top of the script to control the backup retention count desired.
+Place `rsyncd-rotation.sh` somewhere on your server and set executable for user(s) running the receiving `rsyncd`. Adjust the `REVISION=XX` value at top of script to set the backup retention count desired.
 
-Next, configure your target Rsync module(s) to execute rsyncd-rotation.sh after a successful Rsync process in your `rsyncd.conf` file, either `/etc/rsyncd.conf` for root or if using rsyncd over SSH, in `~/rsyncd.conf`.
+Next, configure target Rsync module(s) to execute rsyncd-rotation.sh *after* a successful Rsync run via `rsyncd.conf`, either `/etc/rsyncd.conf` for root or if rsyncd over SSH, via `~/rsyncd.conf`.
 
-As an example and how I typically configure modules on the target:
+As an example, how I typically configure Rsync modules on the target:
 
 ```ini
 list = false
@@ -23,28 +23,28 @@ path = /target/path/to/backup/to
 post-xfer exec = /path/to/rsyncd-rotation.sh
 ```
 
-To break this down:
-- The setting `use chroot = false` is vital if not running the module as root on target server.
-- Before validating module, everything is logged to `/var/log/rsyncd/00default.log`
+Breaking this down:
+- Setting `use chroot = false` (usually) required if not running `rsyncd` under root user.
+- Before validating module login credentials, everything logged to `/var/log/rsyncd/00default.log`
 - Module name defined in `[modulename]`
-- Module logging is to `/var/log/rsyncd/modulename.log`
-- Backup location on the target is defined in `path = /target/path/to/backup/to`. Our backups will be in the form of `/target/path/to/backup/to/001` to `/target/path/to/backup/to/REVISION`.
-- The `post-xfer exec = /path/to/rsyncd-rotation.sh` setting tells `rsyncd` to execute our rotation script after transmission is complete, adjust path to suit.
+- Validated login module logging to `/var/log/rsyncd/modulename.log`
+- Backup location on the target defined in `path = /target/path/to/backup/to`. Backups laid out in the form of `/target/path/to/backup/to/001` to `/target/path/to/backup/to/REVISION`.
+- The `post-xfer exec = /path/to/rsyncd-rotation.sh` setting tells `rsyncd` to execute rotation script *after* transmission is complete, adjust path to suit.
 
 We are now done with the target server.
 
 ### Source server
-To run an incremental backup from the source server you will do something like the following (more than likely from a crontab), flavour your rsync command to suit:
+To start an incremental backup from the source server you will run `rsync` like the following (more than likely via crontab), flavour `rsync` commandline to suit:
 
 ```shell
 rsync -a --delete --link-dest=../001 /backup/from targethost::modulename/000
 
-# or via an SSH connection (better)
+# or over an encrypted SSH connection
 rsync -a -e "ssh -l targetuser" --delete --link-dest=../001 /backup/from targethost::modulename/000
 ```
 The *critical* command line options are:
-- Backup is hard-linked against the previous incremental using `--link-dest=.../001` where source files have not changed (massive disk space savings - vital).
-- The current backup is placed into a **000** directory under the root of the **modulename** path with `targethost::modulename/000`. After the Rsync completes, the target server will execute `rsyncd-rotation.sh` and increase this directory along with all existing incrementals by one position and dropping the oldest if `REVISION` has been reached.
+- Backup is hard-linked against the previous incremental with `--link-dest=.../001`, where source files have not changed between runs for disk space savings.
+- The current backup is placed into a `/target/path/to/backup/to/000` directory with `targethost::modulename/000`. After the Rsync completes, target server will execute `rsyncd-rotation.sh` and increase this directory along with all existing incrementals by one position, dropping the oldest if `REVISION` has been reached.
 
 ## All done
-You should now have automated, space saving (via hard links) and easy to manage incremental backups running under Rsync. Enjoy!
+You should now have automated, space saving and easy to manage incremental backups running under Rsync. Enjoy!
