@@ -7,12 +7,12 @@ REVISION=25
 [ -z "$RSYNC_MODULE_PATH" ] && exit
 [ "$RSYNC_EXIT_STATUS" -ne 0 ] && exit
 
-# only rotate if /000 dir exists
+# only rotate if /000 directory exists
 [ ! -d "$RSYNC_MODULE_PATH/000" ] && exit
 
 REVISIONPAD=`printf %03d $REVISION`
 if [ -d "$RSYNC_MODULE_PATH/$REVISIONPAD" ]; then
-	# drop the oldest backup, outside revision range
+	# drop the oldest backup directory, outside revision range
 	chmod -R u+w "$RSYNC_MODULE_PATH/$REVISIONPAD"
 	rm -rf "$RSYNC_MODULE_PATH/$REVISIONPAD"
 fi
