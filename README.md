@@ -13,7 +13,9 @@ As an example, how I typically configure Rsync modules on the target:
 ```ini
 list = false
 log file = /var/log/rsyncd/00default.log
+log format = %i %f %l
 read only = false
+transfer logging = true
 use chroot = false
 
 
@@ -24,8 +26,9 @@ post-xfer exec = /path/to/rsyncd-rotation.sh
 ```
 
 Breaking this down:
-- Setting `use chroot = false` (usually) required if not running `rsyncd` under root user.
-- Before validating module login credentials, everything logged to `/var/log/rsyncd/00default.log`
+- Before validating module login credentials, everything is logged to `/var/log/rsyncd/00default.log`
+- Increasing the level of transfer logging to include filename and bytes moved via `log format`
+- Setting `use chroot = false` (usually) required if not running `rsyncd` under root
 - Module name defined in `[modulename]`
 - Validated login module logging to `/var/log/rsyncd/modulename.log`
 - Backup location on the target defined in `path = /target/path/to/backup/to`. Backups laid out in the form of `/target/path/to/backup/to/001` to `/target/path/to/backup/to/REVISION`.
