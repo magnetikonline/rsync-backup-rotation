@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REVISION=25
+REVISION_COUNT=25
 
 
 # module path given & rsync transfer a success?
@@ -10,19 +10,20 @@ REVISION=25
 # only rotate if /000 directory exists
 [ ! -d "$RSYNC_MODULE_PATH/000" ] && exit
 
-REVISIONPAD=`printf %03d $REVISION`
-if [ -d "$RSYNC_MODULE_PATH/$REVISIONPAD" ]; then
+revisionPad=`printf %03d $REVISION_COUNT`
+if [ -d "$RSYNC_MODULE_PATH/$revisionPad" ]; then
 	# drop the oldest backup directory, outside revision range
-	chmod -R u+w "$RSYNC_MODULE_PATH/$REVISIONPAD"
-	rm -rf "$RSYNC_MODULE_PATH/$REVISIONPAD"
+	chmod -R u+w "$RSYNC_MODULE_PATH/$revisionPad"
+	rm -rf "$RSYNC_MODULE_PATH/$revisionPad"
 fi
 
-while [ $REVISION -gt 0 ]; do
-	REVISION=$((REVISION - 1))
-	REVISIONPAD=`printf %03d $REVISION`
+revision=$REVISION_COUNT
+while [ $revision -gt 0 ]; do
+	revision=$((revision - 1))
+	revisionPad=`printf %03d $revision`
 
-	if [ -d "$RSYNC_MODULE_PATH/$REVISIONPAD" ]; then
-		REVISIONNEXTPAD=`printf %03d $((REVISION + 1))`
-		mv "$RSYNC_MODULE_PATH/$REVISIONPAD" "$RSYNC_MODULE_PATH/$REVISIONNEXTPAD"
+	if [ -d "$RSYNC_MODULE_PATH/$revisionPad" ]; then
+		revisionNextPad=`printf %03d $((revision + 1))`
+		mv "$RSYNC_MODULE_PATH/$revisionPad" "$RSYNC_MODULE_PATH/$revisionNextPad"
 	fi
 done
