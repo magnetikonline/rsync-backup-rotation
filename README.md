@@ -1,5 +1,12 @@
 # Rsync backup rotation
-Automate incremental backups when using Rsync via a module `post-xfer exec` script and `--link-dest`. Backups are numbered in directories from `001..REVISION_COUNT` with the script dropping the oldest directory once `REVISION_COUNT` limit has been reached.
+Automate incremental backups when using Rsync via a module `post-xfer exec` script and the `--link-dest` option.
+
+Backups are numbered in directories from `001..REVISION_COUNT` with the script dropping the oldest directory once `REVISION_COUNT` limit has been reached.
+
+- [Install](#install)
+	- [Target server](#target-server)
+	- [Source server](#source-server)
+- [All done](#all-done)
 
 ## Install
 
