@@ -3,12 +3,25 @@
 REVISION_COUNT=25
 
 
-# module path given & rsync transfer a success?
-[[ -z $RSYNC_MODULE_PATH ]] && exit
-[[ $RSYNC_EXIT_STATUS -ne 0 ]] && exit
+function exitError {
+
+	echo "Error: $1" >&2
+	exit 1
+}
+
+# confirm module path given & rsync transfer a success?
+if [[ -z $RSYNC_MODULE_PATH ]]; then
+	exitError "No \$RSYNC_MODULE_PATH found."
+fi
+
+if [[ $RSYNC_EXIT_STATUS -ne 0 ]]; then
+	exitError "Returned \$RSYNC_EXIT_STATUS not successful, skipping rotate."
+fi
 
 # only rotate if /000 directory exists
-[[ ! -d "$RSYNC_MODULE_PATH/000" ]] && exit
+if [[ ! -d "$RSYNC_MODULE_PATH/000" ]]; then
+	exitError "Unable to locate upload directory, ensure Rsync target is in the form [TARGET_HOST::MODULE_NAME/000]."
+fi
 
 revisionPad=$(printf %03d $REVISION_COUNT)
 if [[ -d "$RSYNC_MODULE_PATH/$revisionPad" ]]; then
