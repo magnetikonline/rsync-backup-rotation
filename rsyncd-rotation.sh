@@ -9,6 +9,11 @@ function exitError {
 	exit 1
 }
 
+function padRevisionDirPart {
+
+	printf "%03d" "$1"
+}
+
 # confirm module path given & rsync transfer a success?
 if [[ -z $RSYNC_MODULE_PATH ]]; then
 	exitError "No \$RSYNC_MODULE_PATH found."
@@ -23,20 +28,21 @@ if [[ ! -d "$RSYNC_MODULE_PATH/000" ]]; then
 	exitError "Unable to locate upload directory, ensure Rsync target is in the form [TARGET_HOST::MODULE_NAME/000]."
 fi
 
-revisionPad=$(printf %03d $REVISION_COUNT)
-if [[ -d "$RSYNC_MODULE_PATH/$revisionPad" ]]; then
+revisionDir="$RSYNC_MODULE_PATH/$(padRevisionDirPart "$REVISION_COUNT")"
+if [[ -d $revisionDir ]]; then
 	# drop the oldest backup directory, outside revision range
-	chmod -R u+w "$RSYNC_MODULE_PATH/$revisionPad"
-	rm -rf "$RSYNC_MODULE_PATH/$revisionPad"
+	chmod --recursive u+w "$revisionDir"
+	rm --force --recursive "$revisionDir"
 fi
 
 revision=$REVISION_COUNT
 while [[ $revision -gt 0 ]]; do
-	revision=$((revision - 1))
-	revisionPad=$(printf %03d $revision)
+	((revision--))
+	revisionDir="$RSYNC_MODULE_PATH/$(padRevisionDirPart "$revision")"
 
-	if [[ -d "$RSYNC_MODULE_PATH/$revisionPad" ]]; then
-		revisionNextPad=$(printf %03d $((revision + 1)))
-		mv "$RSYNC_MODULE_PATH/$revisionPad" "$RSYNC_MODULE_PATH/$revisionNextPad"
+	if [[ -d $revisionDir ]]; then
+		mv \
+			"$revisionDir" \
+			"$RSYNC_MODULE_PATH/$(padRevisionDirPart "$(($revision + 1))")"
 	fi
 done
