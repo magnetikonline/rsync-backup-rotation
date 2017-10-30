@@ -3,7 +3,7 @@ Automate incremental [Rsync](https://rsync.samba.org/) backups via a module `pos
 
 Incremental backups are stored using hard-links between identical files, providing very efficient storage using nothing more than the Linux file system.
 
-Backup runs are numbered in directories from `001 -> REVISION_COUNT`, with the script dropping directories which exceed `REVISION_COUNT`.
+Backup runs are numbered in directories from `001 -> REVISION_COUNT`, script automatically removes directories exceeding `REVISION_COUNT`.
 
 - [Installation](#installation)
 	- [Target server](#target-server)
