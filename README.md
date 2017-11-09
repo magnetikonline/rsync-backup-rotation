@@ -14,12 +14,11 @@ Backup runs are numbered in directories from `001 -> REVISION_COUNT`, script aut
 
 ### Target server
 - Place `rsyncd-rotation.sh` somewhere usable and set executable for the run-as user of _receiving_ `rsyncd` process.
-- Adjust [`REVISION_COUNT`](rsyncd-rotation.sh#L3) constant to the incremental retention count desired.
 - Configure target Rsync module(s) to execute `rsyncd-rotation.sh` *after* a successful run via:
 	- `/etc/rsyncd.conf` if running daemon mode, or...
 	- `~/rsyncd.conf` if via SSH.
 
-As an example, how I typically configure target modules:
+An example target module config:
 
 ```ini
 list = false
@@ -37,31 +36,45 @@ post-xfer exec = /path/to/rsyncd-rotation.sh
 ```
 
 Breaking this down:
-- Before validating user/module, everything is logged to `/var/log/rsyncd/00default.log`.
+- Before validating user/module, everything logged to `/var/log/rsyncd/00default.log`.
 - Increasing the level of transfer logging to include filename and bytes moved via `log format`.
 - Setting `use chroot = false` (usually) required if not running `rsyncd` under root.
 - Validated module logging to `/var/log/rsyncd/MODULE_NAME.log`.
-- Backup location on the target defined in `path = /target/path/to/backup`. Incremental backup runs stored in the form of `/target/path/to/backup/001` to `/target/path/to/backup/REVISION_COUNT`.
-- Stanza `post-xfer exec = /path/to/rsyncd-rotation.sh` instructs `rsyncd` to execute rotation script *after* file transfer is complete.
+- Backup location for the target defined in `path = /target/path/to/backup`.
+	- Incremental backups stored at `/target/path/to/backup/001` to `/target/path/to/backup/REVISION_COUNT`.
+- Finally, stanza `post-xfer exec = /path/to/rsyncd-rotation.sh` instructs `rsyncd` to execute rotation script *after* file transfer is complete.
 
-We are now done with target server configuration.
+#### Optional arguments
+In addition `rsyncd-rotation.sh` accepts arguments:
+- Logging of key script events to file via the `-l LOG_FILE` option, handy for debugging correct operation.
+- Adjustment of backup retention count from [the default](rsyncd-rotation.sh#L3) of 25 via the `-r RETENTION_COUNT` option. Given count must be at least 2.
+
+Example use:
+
+```ini
+[MODULE_NAME]
+log file = /var/log/rsyncd/MODULE_NAME.log
+path = /target/path/to/backup
+post-xfer exec = /path/to/rsyncd-rotation.sh -l /path/to/file.log -r 6
+```
 
 ### Source server
-To start an incremental backup execute `rsync` in a method like below:
+To perform a backup execute `rsync` in a method like below:
 
 ```sh
+# to an rsync listening daemon (unencrypted)
 $ rsync \
-	-a \
+	--archive \
 	--delete \
 	--link-dest=../001 \
 	/backup/from/path TARGET_HOST::MODULE_NAME/000
 
 # or over an encrypted SSH connection
 $ rsync \
-	-a \
-	-e "ssh -l TARGET_USER" \
+	--archive \
 	--delete \
 	--link-dest=../001 \
+	--rsh "ssh -l TARGET_USER" \
 	/backup/from.path TARGET_HOST::MODULE_NAME/000
 ```
 
