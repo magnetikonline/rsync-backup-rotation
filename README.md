@@ -66,20 +66,20 @@ To perform a backup execute `rsync` in a method like below:
 $ rsync \
 	--archive \
 	--delete \
-	--link-dest=../001 \
+	--link-dest "../001" \
 	/backup/from/path TARGET_HOST::MODULE_NAME/000
 
 # or over an encrypted SSH connection
 $ rsync \
 	--archive \
 	--delete \
-	--link-dest=../001 \
+	--link-dest "../001" \
 	--rsh "ssh -l TARGET_USER" \
 	/backup/from.path TARGET_HOST::MODULE_NAME/000
 ```
 
 The *critical* command line components are:
-- Current backup is hard-linked against previous incremental with the `--link-dest=.../001` argument where files are identical between source and incremental.
+- Current backup is hard-linked against previous incremental with the `--link-dest "../001"` argument where files are identical between source and incremental.
 - Backup is placed into a `/target/path/to/backup/000` directory via the `TARGET_HOST::MODULE_NAME/000` destination set.
 
 Once Rsync completes, `rsyncd-rotation.sh` is executed to increase all incremental directories by one, dropping any that exceed set `REVISION_COUNT`.
