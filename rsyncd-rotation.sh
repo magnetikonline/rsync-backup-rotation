@@ -115,7 +115,7 @@ while [[ $revision -gt 0 ]]; do
 	revisionDir="$RSYNC_MODULE_PATH/$(padRevisionDirPart $revision)"
 
 	if [[ -d $revisionDir ]]; then
-		revisionDirNext="$RSYNC_MODULE_PATH/$(padRevisionDirPart $(($revision + 1)))"
+		revisionDirNext="$RSYNC_MODULE_PATH/$(padRevisionDirPart $((revision + 1)))"
 		mv "$revisionDir" "$revisionDirNext"
 
 		writeLog "Moved [$revisionDir] -> [$revisionDirNext]"
