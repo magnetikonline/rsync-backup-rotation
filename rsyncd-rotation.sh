@@ -61,7 +61,7 @@ while getopts ":l:r:" optKey; do
 	esac
 done
 
-# confirm module path given & rsync transfer a success?
+# confirm module path given & Rsync transfer a success
 if [[ -z $RSYNC_MODULE_PATH ]]; then
 	exitError "No \$RSYNC_MODULE_PATH found."
 fi
@@ -86,7 +86,7 @@ IFS=$'\n'
 for moduleBaseDir in $(ls -1 "$RSYNC_MODULE_PATH/."); do
 	revisionDir="$RSYNC_MODULE_PATH/$moduleBaseDir"
 
-	# skip anything not a directory or not exactly three digits
+	# skip anything not a directory or not exactly $REVISION_DIR_DIGITS digits in length
 	if [[
 		(! -d $revisionDir) ||
 		(! $moduleBaseDir =~ $revisionDirRegexp)
