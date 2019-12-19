@@ -5,18 +5,15 @@ REVISION_DIR_DIGITS=3
 
 
 function exitError {
-
 	echo "Error: $1" >&2
 	exit 1
 }
 
 function writeWarning {
-
 	echo "Warning: $1" >&2
 }
 
 function writeLog {
-
 	# only write to log file if log path defined
 	if [[ -n $logFilePath ]]; then
 		echo "$(date "+%Y-%m-%d %H:%M:%S"): $1" >>"$logFilePath"
@@ -24,7 +21,6 @@ function writeLog {
 }
 
 function padRevisionDirPart {
-
 	printf "%0${REVISION_DIR_DIGITS}d" "$1"
 }
 
@@ -109,6 +105,7 @@ done
 
 unset IFS
 
+# increment each revision directory number
 revision=$revisionCount
 while [[ $revision -gt 0 ]]; do
 	((revision--))

@@ -7,6 +7,7 @@ Backup runs are numbered in directories from `001 -> REVISION_COUNT`, script aut
 
 - [Installation](#installation)
 	- [Target server](#target-server)
+		- [Optional arguments](#optional-arguments)
 	- [Source server](#source-server)
 - [All done](#all-done)
 
