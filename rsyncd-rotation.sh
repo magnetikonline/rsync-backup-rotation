@@ -24,6 +24,36 @@ function padRevisionDirPart {
 	printf "%0${REVISION_DIR_DIGITS}d" "$1"
 }
 
+function removeExpiredRevision {
+	local revisionDirRegexp="^[0-9]{${REVISION_DIR_DIGITS}}$"
+	local moduleBaseDir
+
+	local IFS=$'\n'
+	for moduleBaseDir in $(ls -1 "$RSYNC_MODULE_PATH/."); do
+		local revisionDir="$RSYNC_MODULE_PATH/$moduleBaseDir"
+
+		# skip anything not a directory or not exactly $REVISION_DIR_DIGITS digits in length
+		if [[
+			(! -d $revisionDir) ||
+			(! $moduleBaseDir =~ $revisionDirRegexp)
+		]]; then
+			continue
+		fi
+
+		# convert revision to integer
+		local revision=$((10#$moduleBaseDir))
+
+		# above revision retention count?
+		if [[ $revision -ge $1 ]]; then
+			# drop revision outside range
+			chmod --recursive u+w "$revisionDir"
+			rm --force --recursive "$revisionDir"
+
+			writeLog "Removed revision [$revisionDir]"
+		fi
+	done
+}
+
 # read script arguments
 logFilePath=""
 revisionCount=$REVISION_COUNT_DEFAULT
@@ -66,46 +96,20 @@ if [[ $RSYNC_EXIT_STATUS -ne 0 ]]; then
 	exitError "Returned \$RSYNC_EXIT_STATUS not successful, skipping rotate."
 fi
 
-# only rotate if zeroed (/000) directory exists
+# only rotate if zeroed directory exists
 zeroBackupDirPart=$(padRevisionDirPart 0)
 if [[ ! -d "$RSYNC_MODULE_PATH/$zeroBackupDirPart" ]]; then
-	exitError "Unable to locate upload directory, ensure Rsync target is in the form [TARGET_HOST::MODULE_NAME/$zeroBackupDirPart]."
+	exitError "Unable to locate upload directory, ensure Rsync target in the form [TARGET_HOST::MODULE_NAME/$zeroBackupDirPart]."
 fi
 
 # log environment
 writeLog "Rsync module path [$RSYNC_MODULE_PATH]"
 writeLog "Revision keep count [$revisionCount]"
 
-# remove all directories outside [$revisionCount] limit
-revisionDirRegexp="^[0-9]{${REVISION_DIR_DIGITS}}$"
-IFS=$'\n'
-for moduleBaseDir in $(ls -1 "$RSYNC_MODULE_PATH/."); do
-	revisionDir="$RSYNC_MODULE_PATH/$moduleBaseDir"
+# remove expired directories after [$revisionCount]
+removeExpiredRevision $revisionCount
 
-	# skip anything not a directory or not exactly $REVISION_DIR_DIGITS digits in length
-	if [[
-		(! -d $revisionDir) ||
-		(! $moduleBaseDir =~ $revisionDirRegexp)
-	]]; then
-		continue
-	fi
-
-	# convert to revision integer
-	revision=$((10#$moduleBaseDir))
-
-	# above revision retention count?
-	if [[ $revision -ge $revisionCount ]]; then
-		# drop revision outside range
-		chmod --recursive u+w "$revisionDir"
-		rm --force --recursive "$revisionDir"
-
-		writeLog "Removed revision [$revisionDir]"
-	fi
-done
-
-unset IFS
-
-# increment each revision directory number
+# increment each revision directory
 revision=$revisionCount
 while [[ $revision -gt 0 ]]; do
 	((revision--))
