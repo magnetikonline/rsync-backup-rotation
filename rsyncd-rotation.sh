@@ -25,7 +25,7 @@ function padRevisionDirPart {
 }
 
 function removeExpiredRevision {
-	local revisionDirRegexp="^[0-9]{${REVISION_DIR_DIGITS}}$"
+	local revisionDirRegexp="^[0-9]{$REVISION_DIR_DIGITS}$"
 	local moduleBaseDir
 
 	local IFS=$'\n'
@@ -83,7 +83,7 @@ while getopts ":l:r:" optKey; do
 			# ensure parent directory exists
 			parentDir=$(dirname "$logFilePath")
 			if [[ ! -d $parentDir ]]; then
-				writeWarning "Invalid log file directory of [$parentDir], logging disabled."
+				writeWarning "Invalid log file directory of [$parentDir] - logging disabled."
 				logFilePath=""
 			fi
 			;;
@@ -96,7 +96,7 @@ while getopts ":l:r:" optKey; do
 				(! $revisionCount =~ ^[1-9][0-9]?$) ||
 				($revisionCount -lt 2)
 			]]; then
-				writeWarning "Revision count must be a value between 2-99, falling back to default of [$REVISION_COUNT_DEFAULT]"
+				writeWarning "Revision count must be between 2-99 - falling back to default of [$REVISION_COUNT_DEFAULT]."
 				revisionCount=$REVISION_COUNT_DEFAULT
 			fi
 			;;
