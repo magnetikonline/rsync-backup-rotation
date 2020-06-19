@@ -1,20 +1,21 @@
 # Rsync backup rotation
-Automate incremental [Rsync](https://rsync.samba.org/) backups via a module `post-xfer exec` script and the `--link-dest` option.
+Enable automated incremental [Rsync](https://rsync.samba.org/) backups with a module `post-xfer exec` script and the `--link-dest` option.
 
 Incremental backups are stored using hard-links between identical files, providing very efficient storage using nothing more than the Linux file system.
 
-Backup runs are numbered in directories from `001 -> REVISION_COUNT`, script automatically removes directories exceeding `REVISION_COUNT`.
+Backup runs are numbered in directories from `001 -> REVISION_COUNT`, with script automatically truncating directories beyond `REVISION_COUNT`.
 
 - [Installation](#installation)
 	- [Target server](#target-server)
 		- [Optional arguments](#optional-arguments)
 	- [Source server](#source-server)
-- [All done](#all-done)
+	- [All done](#all-done)
+- [Tests](#tests)
 
 ## Installation
 
 ### Target server
-- Place `rsyncd-rotation.sh` somewhere usable and set executable for the run-as user of _receiving_ `rsyncd` process.
+- Place [`rsyncd-rotation.sh`](rsyncd-rotation.sh) somewhere usable and set executable for the run-as user of _receiving_ `rsyncd` process.
 - Configure target Rsync module(s) to execute `rsyncd-rotation.sh` *after* a successful run via:
 	- `/etc/rsyncd.conf` if running daemon mode, or...
 	- `~/rsyncd.conf` if via SSH.
@@ -48,7 +49,7 @@ Breaking this down:
 #### Optional arguments
 In addition `rsyncd-rotation.sh` accepts arguments:
 - Logging of key script events to file via the `-l LOG_FILE` option, handy for debugging correct operation.
-- Adjustment of backup retention count from [the default](rsyncd-rotation.sh#L3) of 25 via the `-r RETENTION_COUNT` option. Given count must be at least 2.
+- Adjustment of backup retention count from [default](rsyncd-rotation.sh#L3) of `25` via the `-r RETENTION_COUNT` option. Given count must be `2` or greater.
 
 Example use:
 
@@ -85,5 +86,8 @@ The *critical* command line components are:
 
 Once Rsync completes, `rsyncd-rotation.sh` is executed to increase all incremental directories by one, dropping any that exceed set `REVISION_COUNT`.
 
-## All done
+### All done
 You should now have automated, space saving and easy to manage incremental backups running under Rsync. Enjoy!
+
+## Tests
+Small test suite for `rsyncd-rotation.sh` provided by [`test/test.sh`](test/test.sh).
