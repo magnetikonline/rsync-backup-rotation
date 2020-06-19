@@ -40,7 +40,7 @@ function removeExpiredRevision {
 			continue
 		fi
 
-		# convert revision to integer
+		# cast revision to integer (strip leading zeroes)
 		local revision=$((10#$moduleBaseDir))
 
 		# above revision retention count?
@@ -54,7 +54,23 @@ function removeExpiredRevision {
 	done
 }
 
-# read script arguments
+function incrementRevision {
+	# cast revision to integer
+	local revision=$((10#$1))
+	while [[ $revision -gt 0 ]]; do
+		((revision--))
+		local revisionDir="$RSYNC_MODULE_PATH/$(padRevisionDirPart $revision)"
+
+		if [[ -d $revisionDir ]]; then
+			local revisionDirNext="$RSYNC_MODULE_PATH/$(padRevisionDirPart $((revision + 1)))"
+			mv "$revisionDir" "$revisionDirNext"
+
+			writeLog "Moved [$revisionDir] -> [$revisionDirNext]"
+		fi
+	done
+}
+
+# read arguments
 logFilePath=""
 revisionCount=$REVISION_COUNT_DEFAULT
 
@@ -110,15 +126,4 @@ writeLog "Revision keep count [$revisionCount]"
 removeExpiredRevision $revisionCount
 
 # increment each revision directory
-revision=$revisionCount
-while [[ $revision -gt 0 ]]; do
-	((revision--))
-	revisionDir="$RSYNC_MODULE_PATH/$(padRevisionDirPart $revision)"
-
-	if [[ -d $revisionDir ]]; then
-		revisionDirNext="$RSYNC_MODULE_PATH/$(padRevisionDirPart $((revision + 1)))"
-		mv "$revisionDir" "$revisionDirNext"
-
-		writeLog "Moved [$revisionDir] -> [$revisionDirNext]"
-	fi
-done
+incrementRevision $revisionCount
