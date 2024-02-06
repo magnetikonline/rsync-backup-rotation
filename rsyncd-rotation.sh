@@ -26,9 +26,9 @@ function padRevisionDirPart {
 
 function removeExpiredRevision {
 	local revisionDirRegexp="^[0-9]{$REVISION_DIR_DIGITS}$"
-	local moduleBaseDir
 
 	local IFS=$'\n'
+	local moduleBaseDir
 	for moduleBaseDir in $(ls -1 "$RSYNC_MODULE_PATH/."); do
 		local revisionDir="$RSYNC_MODULE_PATH/$moduleBaseDir"
 
