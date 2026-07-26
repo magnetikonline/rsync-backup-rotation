@@ -74,8 +74,8 @@ function incrementRevision {
 logFilePath=""
 revisionCount=$REVISION_COUNT_DEFAULT
 
-while getopts ":l:r:" optKey; do
-	case "$optKey" in
+while getopts :l:r: optKey; do
+	case $optKey in
 		l)
 			# log key script events to file
 			logFilePath=$OPTARG
