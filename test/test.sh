@@ -6,6 +6,13 @@ ROTATE_SCRIPT="$DIRNAME/../rsyncd-rotation.sh"
 . "$DIRNAME/util.sh"
 
 
+tmpModulePath=$(mktemp --directory)
+function tmpModulePathCleanup {
+	rm --force --recursive "$tmpModulePath"
+}
+trap tmpModulePathCleanup EXIT TERM
+
+
 # test: no $RSYNC_MODULE_PATH given should return error
 execScript "$ROTATE_SCRIPT"
 retValIs1
@@ -24,7 +31,6 @@ retValIs1
 stderrMatch 'Warning:\ Revision\ count\ must\ be\ between\ 2-99\ -\ falling\ back\ to\ default\ of\ \[25\]\.'
 
 
-tmpModulePath=$(mktemp --directory)
 export RSYNC_MODULE_PATH=$tmpModulePath
 
 
@@ -78,7 +84,4 @@ dirNotExist "$tmpModulePath/006"
 fileExist "$tmpModulePath/006"
 
 
-# clean up
-rm --force --recursive "$tmpModulePath"
-cleanup
 echo "Passed!"

@@ -1,6 +1,13 @@
 STDOUT_CAPTURE=$(mktemp)
 STDERR_CAPTURE=$(mktemp)
 
+function utilCleanup {
+	echo "cleanup!"
+	rm --force "$STDOUT_CAPTURE"
+	rm --force "$STDERR_CAPTURE"
+}
+trap utilCleanup EXIT TERM
+
 
 function exitError {
 	echo "Error: $1" >&2
@@ -54,9 +61,4 @@ function fileExist {
 	if [[ ! -f $1 ]]; then
 		exitError "Expected to find file [$1]"
 	fi
-}
-
-function cleanup {
-	rm --force "$STDOUT_CAPTURE"
-	rm --force "$STDERR_CAPTURE"
 }

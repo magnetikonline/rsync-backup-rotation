@@ -98,4 +98,4 @@ You should now have automated, space saving and easy to manage incremental backu
 
 ## Tests
 
-Small test suite for `rsyncd-rotation.sh` provided by [`test/test.sh`](test/test.sh).
+Test suite for `rsyncd-rotation.sh` provided by [`test/test.sh`](test/test.sh).
